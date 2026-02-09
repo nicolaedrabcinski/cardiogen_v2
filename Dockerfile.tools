@@ -1,0 +1,91 @@
+FROM ubuntu:22.04
+
+# Установка базовых инструментов
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    git \
+    bwa \
+    unzip \
+    default-jre \
+    build-essential \
+    cmake \
+    libboost-all-dev \
+    libgmp-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libssl-dev \
+    libncurses5-dev \
+    libcurl4-openssl-dev \
+    bzip2 \
+    xz-utils \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa -y && \
+    apt-get update && \
+    apt-get install -y python2 python2-dev python2-minimal && \
+    ln -sf /usr/bin/python2 /usr/bin/python && \
+    python --version
+
+WORKDIR /opt
+
+# FastQC
+RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
+    unzip fastqc_v0.12.1.zip && \
+    chmod +x FastQC/fastqc && \
+    ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
+    rm fastqc_v0.12.1.zip
+
+# Fastp
+RUN wget http://opengene.org/fastp/fastp.0.23.4 && \
+    mv fastp.0.23.4 /usr/local/bin/fastp && \
+    chmod +x /usr/local/bin/fastp
+
+# Samtools
+RUN wget https://github.com/samtools/samtools/releases/download/1.17/samtools-1.17.tar.bz2 && \
+    tar -xjf samtools-1.17.tar.bz2 && \
+    cd samtools-1.17 && \
+    ./configure --prefix=/usr/local && \
+    make && make install && \
+    cd .. && rm -rf samtools-1.17*
+
+# HTSlib (для Octopus)
+RUN wget https://github.com/samtools/htslib/releases/download/1.17/htslib-1.17.tar.bz2 && \
+    tar -xjf htslib-1.17.tar.bz2 && \
+    cd htslib-1.17 && \
+    ./configure --prefix=/usr/local && \
+    make -j$(nproc) && make install && \
+    cd .. && rm htslib-1.17.tar.bz2
+
+RUN ldconfig
+
+# Octopus
+RUN git clone --branch v0.7.4 --depth 1 https://github.com/luntergroup/octopus.git octopus-0.7.4 && \
+    cd octopus-0.7.4 && \
+    mkdir -p build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local && \
+    make -j$(nproc) && make install && \
+    mv /usr/local/octopus /usr/local/bin/octopus
+
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Manta
+RUN wget https://github.com/Illumina/manta/releases/download/v1.6.0/manta-1.6.0.centos6_x86_64.tar.bz2 && \
+    tar -xjf manta-1.6.0.centos6_x86_64.tar.bz2 && \
+    rm manta-1.6.0.centos6_x86_64.tar.bz2
+
+ENV PATH="/opt/manta-1.6.0.centos6_x86_64/bin:${PATH}"
+
+# Delly
+RUN wget https://github.com/dellytools/delly/releases/download/v1.1.6/delly_v1.1.6_linux_x86_64bit && \
+    mv delly_v1.1.6_linux_x86_64bit /usr/local/bin/delly && \
+    chmod +x /usr/local/bin/delly
+
+
+
+WORKDIR /data
+CMD ["/bin/bash"]

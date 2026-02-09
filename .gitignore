@@ -1,0 +1,33 @@
+# Nextflow
+.nextflow*
+work/
+results/
+/reference
+pipeline_info/
+trace.txt*
+timeline.html*
+report.html*
+dag.dot
+
+# Data
+*.bam
+*.bai
+*.fastq.gz
+*.fq.gz
+*.vcf
+*.bcf
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

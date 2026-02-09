@@ -6,31 +6,12 @@
 
 A reproducible, scalable Nextflow pipeline for Whole Exome Sequencing (WES) data analysis with clinical-grade variant calling.
 
-
 ## Requirements
 
 - **Java** 11 or higher
 - **Nextflow** 23.10 or higher
 - **Docker** or **Singularity**
 - **Resources**: Minimum 8GB RAM, 4 CPU cores
-
-## Reference Genome
-
-The pipeline expects a pre-indexed **hg38 reference genome** in:
-```
-${projectDir}/reference/hg38/
-```
-
-**Required files:**
-```
-./reference/hg38/
-├── hg38.analysisSet.fa      # Reference FASTA
-├── hg38.analysisSet.fa.fai  # FASTA index
-├── hg38.analysisSet.fa.amb  # BWA index files
-├── hg38.analysisSet.fa.ann
-├── hg38.analysisSet.fa.bwt
-├── hg38.analysisSet.fa.pac
-└── hg38.analysisSet.fa.sa
 
 ## Installation
 
@@ -51,17 +32,40 @@ cd cardiogen_v2
 docker build -t cardiogen-wes-tools:latest -f Dockerfile.tools .
 ```
 
+## Reference Genome
+
+The pipeline expects a pre-indexed **hg38 reference genome** in:
+```
+${projectDir}/reference/hg38/
+```
+
+**Required files:**
+```
+./reference/hg38/
+├── hg38.analysisSet.fa      # Reference FASTA
+├── hg38.analysisSet.fa.fai  # FASTA index
+├── hg38.analysisSet.fa.amb  # BWA index files
+├── hg38.analysisSet.fa.ann
+├── hg38.analysisSet.fa.bwt
+├── hg38.analysisSet.fa.pac
+└── hg38.analysisSet.fa.sa
+```
+
 ## Quick Start
 ```bash
 nextflow run main.nf \
   --input_dir /path/to/fastq \
-  --outdir ./results \
-  --genome GRCh38
+  --outdir ./results
 ```
-
-
 
 ## Pipeline Overview
 ```
-FASTQ files → QC → Alignment → Variant Calling → Annotation → Report
+FASTQ files → QC → Alignment → Variant Calling → Report
 ```
+
+**Steps:**
+1. Quality control (FastQC)
+2. Read trimming (FastP)
+3. Alignment to reference (BWA-MEM)
+4. Variant calling (OCTOPUS, MANTA, DELLY)
+5. Report generation
